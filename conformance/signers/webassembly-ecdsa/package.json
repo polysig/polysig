@@ -9,6 +9,9 @@
     "build": "./build.sh",
     "dev": "vite",
     "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:webkit": "playwright test --project=webkit",
+    "test:firefox": "playwright test --project=firefox",
     "test-ui": "playwright test --ui",
     "test-headed": "playwright test --headed"
   },

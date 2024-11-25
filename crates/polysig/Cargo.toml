@@ -11,7 +11,11 @@ repository = "https://github.com/polysig/polysig"
 default = ["full"]
 full = ["signers", "protocols"]
 signers = ["ecdsa", "eddsa", "schnorr"]
-protocols = ["cggmp", "frost-ed25519"]
+protocols = [
+  "cggmp",
+  "frost-ed25519",
+  "frost-secp256k1-tr",
+]
 cggmp = [
   "polysig-client/cggmp",
   "polysig-driver/cggmp",
@@ -19,6 +23,10 @@ cggmp = [
 frost-ed25519 = [
   "polysig-client/frost-ed25519",
   "polysig-driver/frost-ed25519",
+]
+frost-secp256k1-tr = [
+  "polysig-client/frost-secp256k1-tr",
+  "polysig-driver/frost-secp256k1-tr",
 ]
 ecdsa = ["polysig-driver/ecdsa"]
 eddsa = ["polysig-driver/eddsa"]

@@ -7,14 +7,15 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/polysig/polysig"
 
 [features]
+full = ["signers", "protocols"]
+signers = ["ecdsa", "eddsa", "schnorr"]
+protocols = ["cggmp", "frost-ed25519", "frost-secp256k1-tr"]
 cggmp = ["polysig-driver/cggmp"]
 ecdsa = ["polysig-driver/ecdsa"]
 eddsa = ["polysig-driver/eddsa"]
 frost-ed25519 = ["polysig-driver/frost-ed25519"]
+frost-secp256k1-tr = ["polysig-driver/frost-secp256k1-tr"]
 schnorr = ["polysig-driver/schnorr"]
-signers = ["ecdsa", "eddsa", "schnorr"]
-protocols = ["cggmp", "frost-ed25519"]
-full = ["signers", "protocols"]
 
 tracing = [
   "dep:tracing",

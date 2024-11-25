@@ -9,4 +9,4 @@ COPY Cargo.lock Cargo.lock
 COPY config.toml config.toml
 RUN cargo build --release --bin polysig-relay
 
-CMD /usr/app/target/release/polysig-relay start --bind 0.0.0.0:8080 /usr/app/config.toml
+CMD /usr/app/target/release/polysig-relay --bind 0.0.0.0:8080 /usr/app/config.toml

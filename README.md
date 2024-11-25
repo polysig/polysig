@@ -18,6 +18,7 @@ The library includes bindings for Webassembly to be used in the browser and for 
 
 * `cggmp`: Enable the [CGGMP21][] protocol using [synedrion][].
 * `frost-ed25519`: Enable the [FROST][] Ed25519 protocol using  [frost-ed25519](https://docs.rs/frost-ed25519/).
+* `frost-secp256k1-tr`: Enable the [FROST][] Secp256k1 Taproot protocol using  [frost-secp256k1-tr](https://docs.rs/frost-secp256k1-tr/).
 
 ### Signers
 
@@ -102,7 +103,7 @@ cargo make gen-keys
 Start a server:
 
 ```
-cargo run -- start config.toml
+cargo run -- config.toml
 ```
 
 ### Documentation

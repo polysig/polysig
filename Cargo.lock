@@ -991,7 +991,29 @@ dependencies = [
  "rand_core",
  "serde",
  "serdect 0.2.0",
- "thiserror",
+ "thiserror 1.0.69",
+ "thiserror-nostd-notrait",
+ "visibility",
+ "zeroize",
+]
+
+[[package]]
+name = "frost-core"
+version = "2.0.0"
+source = "git+https://github.com/ZcashFoundation/frost.git?rev=102320bef758b0800b30e4343e58d972b50a7da7#102320bef758b0800b30e4343e58d972b50a7da7"
+dependencies = [
+ "byteorder",
+ "const-crc32-nostd",
+ "debugless-unwrap",
+ "derive-getters",
+ "document-features",
+ "hex",
+ "itertools 0.13.0",
+ "postcard",
+ "rand_core",
+ "serde",
+ "serdect 0.2.0",
+ "thiserror 2.0.3",
  "thiserror-nostd-notrait",
  "visibility",
  "zeroize",
@@ -1005,8 +1027,8 @@ checksum = "4186731878c57b4e4d5d1103c8e0d2a827d3cb63cf577826ce29d52c34be7d39"
 dependencies = [
  "curve25519-dalek",
  "document-features",
- "frost-core",
- "frost-rerandomized",
+ "frost-core 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "frost-rerandomized 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand_core",
  "sha2",
 ]
@@ -1019,9 +1041,35 @@ checksum = "1a9d77595060546b53543d96b83dbeacaf3907e40a89763a8bb22124812b0cb6"
 dependencies = [
  "derive-getters",
  "document-features",
- "frost-core",
+ "frost-core 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex",
  "rand_core",
+]
+
+[[package]]
+name = "frost-rerandomized"
+version = "2.0.0"
+source = "git+https://github.com/ZcashFoundation/frost.git?rev=102320bef758b0800b30e4343e58d972b50a7da7#102320bef758b0800b30e4343e58d972b50a7da7"
+dependencies = [
+ "derive-getters",
+ "document-features",
+ "frost-core 2.0.0 (git+https://github.com/ZcashFoundation/frost.git?rev=102320bef758b0800b30e4343e58d972b50a7da7)",
+ "hex",
+ "rand_core",
+]
+
+[[package]]
+name = "frost-secp256k1-tr"
+version = "2.0.0"
+source = "git+https://github.com/ZcashFoundation/frost.git?rev=102320bef758b0800b30e4343e58d972b50a7da7#102320bef758b0800b30e4343e58d972b50a7da7"
+dependencies = [
+ "document-features",
+ "frost-core 2.0.0 (git+https://github.com/ZcashFoundation/frost.git?rev=102320bef758b0800b30e4343e58d972b50a7da7)",
+ "frost-rerandomized 2.0.0 (git+https://github.com/ZcashFoundation/frost.git?rev=102320bef758b0800b30e4343e58d972b50a7da7)",
+ "k256",
+ "rand_core",
+ "serde",
+ "sha2",
 ]
 
 [[package]]
@@ -1240,7 +1288,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen 0.5.0",
  "serde_urlencoded",
- "thiserror",
+ "thiserror 1.0.69",
  "wasm-bindgen",
  "web-sys",
 ]
@@ -1260,7 +1308,7 @@ dependencies = [
  "pin-project",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -1286,7 +1334,7 @@ dependencies = [
  "js-sys",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "wasm-bindgen",
  "web-sys",
 ]
@@ -2124,7 +2172,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen 0.6.5",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tokio-tungstenite 0.23.1",
  "tracing",
@@ -2143,6 +2191,7 @@ dependencies = [
  "ed25519",
  "ed25519-dalek",
  "frost-ed25519",
+ "frost-secp256k1-tr",
  "futures",
  "k256",
  "polysig-protocol",
@@ -2152,7 +2201,7 @@ dependencies = [
  "serde_json",
  "sha3",
  "synedrion",
- "thiserror",
+ "thiserror 1.0.69",
  "tracing",
  "wasm-bindgen",
 ]
@@ -2198,7 +2247,7 @@ dependencies = [
  "polysig-protocol",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tokio-stream",
  "tokio-tungstenite 0.23.1",
@@ -2242,7 +2291,7 @@ dependencies = [
  "serde",
  "serde_json",
  "snow",
- "thiserror",
+ "thiserror 1.0.69",
  "uuid",
 ]
 
@@ -2260,7 +2309,7 @@ dependencies = [
  "polysig-protocol",
  "serde",
  "serde_json",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio",
  "tokio-stream",
  "tokio-tungstenite 0.23.1",
@@ -2278,9 +2327,14 @@ dependencies = [
  "anyhow",
  "axum-server",
  "clap",
+ "ed25519-dalek",
+ "k256",
+ "polysig-driver",
  "polysig-meeting-server",
  "polysig-protocol",
  "polysig-relay-server",
+ "rand",
+ "serde_json",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -2928,7 +2982,16 @@ version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c006c85c7651b3cf2ada4584faa36773bd07bac24acfb39f3c431b36d7e667aa"
+dependencies = [
+ "thiserror-impl 2.0.3",
 ]
 
 [[package]]
@@ -2936,6 +2999,17 @@ name = "thiserror-impl"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f077553d607adc1caf65430528a576c757a71ed73944b66ebb58ef2bbd243568"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3249,7 +3323,7 @@ dependencies = [
  "log",
  "rand",
  "sha1",
- "thiserror",
+ "thiserror 1.0.69",
  "utf-8",
 ]
 
@@ -3267,7 +3341,7 @@ dependencies = [
  "log",
  "rand",
  "sha1",
- "thiserror",
+ "thiserror 1.0.69",
  "utf-8",
 ]
 

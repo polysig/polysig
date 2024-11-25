@@ -12,12 +12,17 @@ default-run = "polysig-relay"
 polysig-protocol.workspace = true
 polysig-meeting-server.workspace = true
 polysig-relay-server.workspace = true
+polysig-driver.workspace = true
+k256 = { workspace = true, features = ["ecdsa", "schnorr"] }
+ed25519-dalek.workspace = true
 anyhow.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 clap.workspace = true
 tokio.workspace = true
 axum-server.workspace = true
+rand.workspace = true
+serde_json.workspace = true
 
 [[bin]]
 path = "src/relay_server.rs"
@@ -26,3 +31,7 @@ name = "polysig-relay"
 [[bin]]
 path = "src/meeting_server.rs"
 name = "polysig-meeting"
+
+[[bin]]
+path = "src/keygen.rs"
+name = "polysig-keygen"

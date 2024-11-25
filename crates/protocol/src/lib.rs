@@ -19,7 +19,6 @@ mod event;
 mod keypair;
 mod meetings;
 mod protocol;
-#[cfg(feature = "zlib")]
 pub mod zlib;
 
 pub use constants::*;
