@@ -40,14 +40,18 @@ pub enum Error {
     Protocol(#[from] polysig_protocol::Error),
 
     /// ECDSA library errors.
-    #[cfg(any(feature = "cggmp", feature = "ecdsa",))]
+    #[cfg(any(
+        feature = "cggmp",
+        feature = "ecdsa",
+        feature = "schnorr"
+    ))]
     #[error(transparent)]
     Ecdsa(#[from] k256::ecdsa::Error),
 
     /// Ed25519 library errors.
     // NOTE: must be boxed otherwise thiserror will compile two
     // NOTE: From implementations when the full feature is enabled
-    #[cfg(any(feature = "eddsa", feature = "schnorr"))]
+    #[cfg(any(feature = "eddsa", feature = "frost-ed25519"))]
     #[error(transparent)]
     Ed25519(#[from] Box<ed25519::Error>),
 }

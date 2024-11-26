@@ -1,14 +1,41 @@
 //! Types for the protocol drivers.
 
 use crate::{Error, Result};
-use polysig_protocol::{hex, PartyNumber, RoundNumber};
+use polysig_protocol::{Keypair, PartyNumber, RoundNumber};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-#[cfg(feature = "cggmp")]
-pub use synedrion::{self, bip32, k256};
+/// Generic threshold key share encoded as a PEM.
+///
+/// The actual threshold key share struct internally
+/// uses `BTreeMap` which when passed over the webassembly
+/// bindings will be converted to a Javascript `Map` however
+/// the `Map` type is not natively supported in `JSON.stringify`
+/// and `JSON.parse` without implementing custom replacer and
+/// reviver functions which is cumbersome.
+///
+/// Therefore, to make sharing threshold key shares across the
+/// Javacript/Webassembly bindings more ergonomic we first encode
+/// the key share to JSON and then encode as a PEM.
+///
+/// A version number is included to allow us to recognize changes
+/// in the upstream library `ThresholdKeyShare` struct.
+#[derive(Serialize, Deserialize)]
+pub struct KeyShare {
+    /// Protocol version.
+    pub version: u16,
+    /// PEM-encoded key share contents.
+    pub contents: String,
+}
 
-#[cfg(feature = "frost-ed25519")]
-pub use frost_ed25519;
+/// Keys for a protocol participant.
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PartyKeys {
+    /// Noise transport keypair.
+    pub encrypt: Keypair,
+    /// Signing key.
+    pub sign: Keypair,
+}
 
 /// Information about the current found which
 /// can be retrieved from a driver.
@@ -34,7 +61,10 @@ pub trait ProtocolDriver {
         + 'static;
 
     /// Outgoing message type.
-    type Message: std::fmt::Debug + Round;
+    type Message: std::fmt::Debug
+        + Round
+        + Serialize
+        + DeserializeOwned;
 
     /// Output when the protocol is completed.
     type Output;
@@ -65,7 +95,7 @@ pub trait ProtocolDriver {
 }
 
 /// Trait for round messages.
-pub trait Round: Serialize + DeserializeOwned + Send + Sync {
+pub trait Round: Send + Sync {
     /// Round number.
     #[allow(dead_code)]
     fn round_number(&self) -> RoundNumber;
@@ -75,9 +105,6 @@ pub trait Round: Serialize + DeserializeOwned + Send + Sync {
 }
 
 /// Round message with additional meta data.
-///
-/// Used to ensure round messages are grouped together and
-/// out of order messages can thus be handled correctly.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RoundMessage<Body, Verifier>
 where
@@ -91,7 +118,7 @@ where
 
 impl<Body, Verifier> RoundMessage<Body, Verifier>
 where
-    Body: Serialize + Send + Sync + DeserializeOwned,
+    Body: Send + Sync,
     Verifier: Serialize + Send + Sync + DeserializeOwned,
 {
     /// Consume this message into the sender and body.
@@ -103,7 +130,7 @@ where
 
 impl<Body, Verifier> Round for RoundMessage<Body, Verifier>
 where
-    Body: Serialize + Send + Sync + DeserializeOwned,
+    Body: Send + Sync,
     Verifier: Serialize + Send + Sync + DeserializeOwned,
 {
     fn round_number(&self) -> RoundNumber {
@@ -160,10 +187,9 @@ where
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PartyOptions<Verifier> {
-    /// Public key of this party.
-    #[serde(with = "hex::serde")]
+    /// Encryption public key for this party.
     public_key: Vec<u8>,
-    /// Public keys of all participants including this one.
+    /// Encryption public keys of all participants including this one.
     participants: Vec<Vec<u8>>,
     /// Whether this party is the session initiator.
     ///

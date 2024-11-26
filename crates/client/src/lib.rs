@@ -14,11 +14,13 @@
 mod client;
 mod error;
 mod event_loop;
+#[cfg(any(feature = "cggmp", feature = "frost"))]
 mod protocols;
 mod transport;
 
 pub(crate) use client::{client_impl, client_transport_impl};
 pub use event_loop::EventStream;
+#[cfg(any(feature = "cggmp", feature = "frost"))]
 pub use protocols::*;
 pub use transport::{NetworkTransport, Transport};
 

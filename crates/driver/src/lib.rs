@@ -7,17 +7,37 @@ pub mod signers;
 
 mod error;
 
-#[cfg(any(feature = "frost-ed25519"))]
+#[cfg(feature = "frost")]
 pub mod frost;
 
 #[cfg(any(feature = "ecdsa", feature = "cggmp"))]
 pub mod recoverable_signature;
 
-#[cfg(any(feature = "cggmp", feature = "frost-ed25519"))]
+#[cfg(any(feature = "cggmp", feature = "frost"))]
 mod protocol;
 
-#[cfg(any(feature = "cggmp", feature = "frost-ed25519"))]
+#[cfg(any(feature = "cggmp", feature = "frost"))]
 pub use protocol::*;
+
+#[cfg(feature = "cggmp")]
+pub use synedrion::{self, bip32};
+
+#[cfg(feature = "frost-ed25519")]
+pub use frost_ed25519;
+
+#[cfg(feature = "frost-secp256k1-tr")]
+pub use frost_secp256k1_tr;
+
+#[cfg(any(
+    feature = "cggmp",
+    feature = "ecdsa",
+    feature = "schnorr",
+    feature = "frost-secp256k1-tr"
+))]
+pub use k256;
+
+#[cfg(any(feature = "eddsa", feature = "frost-ed25519"))]
+pub use ed25519_dalek;
 
 pub use error::Error;
 

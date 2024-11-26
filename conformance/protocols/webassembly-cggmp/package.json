@@ -1,0 +1,25 @@
+{
+  "name": "webassembly-cggmp",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Example and test spec for CGGMP signing using the webassembly bindings",
+  "scripts": {
+      "build": "./scripts/build.sh",
+      "dev": "vite public",
+      "relay": "./scripts/relay-server.sh",
+      "test": "playwright test",
+      "test:chromium": "playwright test --project=chromium",
+      "test:webkit": "playwright test --project=webkit",
+      "test:firefox": "playwright test --project=firefox",
+      "test:ui": "playwright test --ui",
+      "test:headed": "playwright test --headed"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.48.1",
+    "vite": "^5.4.9"
+  }
+}

@@ -3,7 +3,7 @@ const module = await import("/pkg/polysig_webassembly_bindings.js");
 // Initialize the webassembly
 await module.default();
 
-const { joinMeeting } = module;
+const { MeetingRoom } = module;
 const serverUrl = "ws://localhost:8008/";
 
 const { search } = document.location;
@@ -24,8 +24,9 @@ const userData = {
   associatedData: null,
 };
 
-const participants = await joinMeeting(
-  serverUrl, meetingId, userId, userData);
+const room = new MeetingRoom(serverUrl);
+const participants = await room.join(
+  meetingId, userId, userData);
 
 const el = document.getElementById("participants");
 el.innerHTML = `

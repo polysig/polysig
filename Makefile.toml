@@ -67,25 +67,17 @@ wasm-pack build --target web --scope polysig --features signers
 
 [tasks.gen-server-key]
 script = '''
-cargo run -- generate-keypair server.pem
+cargo run --bin polysig-keygen -- keypair server.pem
 '''
 
 [tasks.gen-keys]
 script = '''
-cargo run -- generate-keypair tests/test.pem --public-key tests/server_public_key.txt
-cargo run -- generate-keypair conformance/signers/webassembly-cggmp/p1.pem
-cargo run -- generate-keypair conformance/signers/webassembly-cggmp/p2.pem
-cargo run -- generate-keypair conformance/signers/webassembly-cggmp/p3.pem
+cargo run --bin polysig-keygen -- keypair -f crates/integration_tests/tests/test.pem --public-key crates/integration_tests/tests/server_public_key.txt
 
-cargo run -- generate-keypair conformance/signers/node-cggmp/p1.pem
-cargo run -- generate-keypair conformance/signers/node-cggmp/p2.pem
-cargo run -- generate-keypair conformance/signers/node-cggmp/p3.pem
-'''
-dependencies = ["gen-server-key"]
-
-[tasks.test-server]
-script = '''
-cargo run -- start -b 127.0.0.1:8008 integration_tests/tests/config.toml
+cargo run --bin polysig-keygen -- test-keys -f -n 10 -k ecdsa conformance/ecdsa.json
+cargo run --bin polysig-keygen -- test-keys -f -n 10 -k ed25519 conformance/ed25519.json
+cargo run --bin polysig-keygen -- test-keys -f -n 10 -k schnorr conformance/schnorr.json
+cargo run --bin polysig-keygen -- test-keys -f -n 10 -k schnorr --verifier-serde conformance/schnorr-serde.json
 '''
 
 [tasks.genhtml]

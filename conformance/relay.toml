@@ -1,4 +1,4 @@
-key = "../integration_tests/tests/test.pem"
+key = "../crates/integration_tests/tests/test.pem"
 
 # speed up polling for webassembly CGGMP tests (wait-interval)
 # but keep the standard timeout setting (wait-timeout)

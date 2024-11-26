@@ -1,12 +1,16 @@
 //! Bindings for the CGGMP protocol.
 use polysig_client::SessionOptions;
-use polysig_driver::cggmp::{Participant, PartyOptions};
 use polysig_driver::synedrion::{
     self,
     ecdsa::{SigningKey, VerifyingKey},
     SessionId,
 };
-use polysig_protocol::{hex, PATTERN};
+use polysig_driver::{
+    cggmp::{self, Participant},
+    KeyShare,
+};
+use polysig_protocol::hex;
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
@@ -16,13 +20,49 @@ type Params = synedrion::ProductionParams;
 #[cfg(debug_assertions)]
 type Params = synedrion::TestParams;
 
-type KeyShare = synedrion::ThresholdKeyShare<Params, VerifyingKey>;
+type ThresholdKeyShare =
+    synedrion::ThresholdKeyShare<Params, VerifyingKey>;
+
+/// Options for a party participating in a protocol.
+///
+/// Required in the bindings to convert the `verifiers`
+/// from bytes to verifying keys.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PartyOptions {
+    public_key: Vec<u8>,
+    participants: Vec<Vec<u8>>,
+    is_initiator: bool,
+    party_index: usize,
+    verifiers: Vec<Vec<u8>>,
+}
+
+impl TryFrom<PartyOptions> for cggmp::PartyOptions {
+    type Error = JsError;
+
+    fn try_from(value: PartyOptions) -> Result<Self, Self::Error> {
+        let mut verifiers = Vec::with_capacity(value.verifiers.len());
+        for key in &value.verifiers {
+            verifiers.push(
+                VerifyingKey::from_sec1_bytes(key)
+                    .map_err(JsError::from)?,
+            );
+        }
+
+        Ok(cggmp::PartyOptions::new(
+            value.public_key,
+            value.participants,
+            value.is_initiator,
+            verifiers,
+        )?)
+    }
+}
 
 /// CGGMP protocol.
 #[wasm_bindgen]
 pub struct CggmpProtocol {
     options: SessionOptions,
-    key_share: KeyShare,
+    key_share: ThresholdKeyShare,
 }
 
 #[wasm_bindgen]
@@ -37,6 +77,8 @@ impl CggmpProtocol {
             serde_wasm_bindgen::from_value(options)?;
         let key_share: KeyShare =
             serde_wasm_bindgen::from_value(key_share)?;
+        let key_share: ThresholdKeyShare =
+            (&key_share).try_into().map_err(JsError::from)?;
         Ok(Self { options, key_share })
     }
 
@@ -71,8 +113,9 @@ impl CggmpProtocol {
         let signer: SigningKey =
             signer.as_slice().try_into().map_err(JsError::from)?;
         let verifier = signer.verifying_key().clone();
-        let participant = Participant::new(signer, verifier, party)
-            .map_err(JsError::from)?;
+        let participant =
+            Participant::new(signer, verifier, party.try_into()?)
+                .map_err(JsError::from)?;
         let fut = async move {
             let key_share = polysig_client::cggmp::dkg::<Params>(
                 options,
@@ -80,6 +123,9 @@ impl CggmpProtocol {
                 SessionId::from_seed(&session_id_seed),
             )
             .await?;
+
+            let key_share: KeyShare =
+                (&key_share).try_into().map_err(JsError::from)?;
 
             Ok(serde_wasm_bindgen::to_value(&key_share)?)
         };
@@ -89,11 +135,9 @@ impl CggmpProtocol {
     /// Sign a message.
     pub fn sign(
         &self,
-        // options: JsValue,
         party: JsValue,
         session_id_seed: Vec<u8>,
         signer: Vec<u8>,
-        // key_share: JsValue,
         message: String,
     ) -> Result<JsValue, JsError> {
         let options = self.options.clone();
@@ -102,12 +146,14 @@ impl CggmpProtocol {
         let signer: SigningKey =
             signer.as_slice().try_into().map_err(JsError::from)?;
         let verifier = signer.verifying_key().clone();
-        let participant = Participant::new(signer, verifier, party)
-            .map_err(JsError::from)?;
+        let participant =
+            Participant::new(signer, verifier, party.try_into()?)
+                .map_err(JsError::from)?;
 
         let mut selected_parties = BTreeSet::new();
         selected_parties
             .extend(participant.party().verifiers().iter());
+
         let key_share =
             self.key_share.to_key_share(&selected_parties);
 
@@ -133,7 +179,6 @@ impl CggmpProtocol {
     /// Reshare key shares.
     pub fn reshare(
         &self,
-        // options: JsValue,
         party: JsValue,
         session_id_seed: Vec<u8>,
         signer: Vec<u8>,
@@ -150,10 +195,19 @@ impl CggmpProtocol {
         let verifier = signer.verifying_key().clone();
         let account_verifying_key: VerifyingKey =
             serde_wasm_bindgen::from_value(account_verifying_key)?;
+
         let key_share: Option<KeyShare> =
             serde_wasm_bindgen::from_value(key_share)?;
-        let participant = Participant::new(signer, verifier, party)
-            .map_err(JsError::from)?;
+        let key_share: Option<ThresholdKeyShare> =
+            if let Some(key_share) = key_share {
+                Some((&key_share).try_into().map_err(JsError::from)?)
+            } else {
+                None
+            };
+
+        let participant =
+            Participant::new(signer, verifier, party.try_into()?)
+                .map_err(JsError::from)?;
 
         let fut = async move {
             let key_share = polysig_client::cggmp::reshare(
@@ -189,23 +243,10 @@ impl CggmpProtocol {
         Ok(serde_wasm_bindgen::to_value(&child_key)?)
     }
 
-    /// Generate a PEM-encoded keypair for the noise protocol.
-    ///
-    /// Uses the default noise protocol parameters
-    /// if no pattern is given.
+    /// Generate an encyption keypair for the noise protocol.
     #[wasm_bindgen(js_name = "generateKeypair")]
-    pub fn generate_keypair(
-        pattern: Option<String>,
-    ) -> Result<JsValue, JsError> {
-        let pattern = if let Some(pattern) = pattern {
-            pattern
-        } else {
-            PATTERN.to_owned()
-        };
-        let keypair =
-            polysig_protocol::Keypair::new(pattern.parse()?)?;
-        let public_key = hex::encode(keypair.public_key());
-        let pem = polysig_protocol::encode_keypair(&keypair);
-        Ok(serde_wasm_bindgen::to_value(&(pem, public_key))?)
+    pub fn generate_keypair() -> Result<JsValue, JsError> {
+        let keypair = polysig_protocol::Keypair::generate()?;
+        Ok(serde_wasm_bindgen::to_value(&keypair)?)
     }
 }

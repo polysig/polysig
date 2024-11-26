@@ -3,6 +3,6 @@
 mkdir -p build
 
 cd ../../../crates/bindings/node
-npm run build-schnorr
+npm run build:schnorr-debug
 
-cp -f build/schnorr/release/* ../../../conformance/signers/node-schnorr/build
+cp -f build/schnorr/debug/* ../../../conformance/signers/node-schnorr/build

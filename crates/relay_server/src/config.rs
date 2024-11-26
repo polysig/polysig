@@ -1,5 +1,5 @@
 //! Server configuration.
-use polysig_protocol::{decode_keypair, hex, Keypair};
+use polysig_protocol::{hex, Keypair};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tokio::fs;
@@ -163,7 +163,7 @@ impl ServerConfig {
             fs::read_to_string(&config.key).await?
         };
 
-        let keypair = decode_keypair(contents)?;
+        let keypair = Keypair::decode_pem(contents)?;
 
         if let Some(tls) = config.tls.as_mut() {
             if tls.cert.is_relative() {

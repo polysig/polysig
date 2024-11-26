@@ -23,7 +23,7 @@ impl<'a> SchnorrSigner<'a> {
 
     /// Initialize a signing key from a byte slice.
     pub fn from_slice(signing_key: &[u8]) -> Result<SigningKey> {
-        Ok(SigningKey::from_bytes(signing_key).map_err(Box::from)?)
+        Ok(SigningKey::from_bytes(signing_key)?)
     }
 
     /// Generate a random private signing key.
@@ -39,10 +39,7 @@ impl<'a> SchnorrSigner<'a> {
     /// Attempt to sign the given message digest, returning a
     /// digital signature on success, or an error if something went wrong.
     pub fn sign_prehash(&self, prehash: &[u8]) -> Result<Signature> {
-        Ok(self
-            .signing_key
-            .sign_prehash(prehash)
-            .map_err(Box::from)?)
+        Ok(self.signing_key.sign_prehash(prehash)?)
     }
 
     /// Compute Schnorr signature.
@@ -56,10 +53,7 @@ impl<'a> SchnorrSigner<'a> {
         msg_digest: &[u8],
         aux_rand: &[u8; 32],
     ) -> Result<Signature> {
-        Ok(self
-            .signing_key
-            .sign_raw(msg_digest, aux_rand)
-            .map_err(Box::from)?)
+        Ok(self.signing_key.sign_raw(msg_digest, aux_rand)?)
     }
 
     /// Verifying key for this signer.
@@ -73,10 +67,7 @@ impl<'a> SchnorrSigner<'a> {
         message: &[u8],
         signature: &Signature,
     ) -> Result<()> {
-        Ok(self
-            .verifying_key()
-            .verify(message, signature)
-            .map_err(Box::from)?)
+        Ok(self.verifying_key().verify(message, signature)?)
     }
     /// Verify a Schnorr signaature.
     ///
@@ -91,9 +82,6 @@ impl<'a> SchnorrSigner<'a> {
         message: &[u8],
         signature: &Signature,
     ) -> Result<()> {
-        Ok(self
-            .verifying_key()
-            .verify_raw(message, signature)
-            .map_err(Box::from)?)
+        Ok(self.verifying_key().verify_raw(message, signature)?)
     }
 }

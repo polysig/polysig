@@ -5,146 +5,144 @@ use crate::{
     Error, Result,
 };
 use pem::Pem;
-use serde::{
-    de::{self, Deserializer, Visitor},
-    ser::Serializer,
-    Deserialize, Serialize,
-};
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
+/// Type of supported keys.
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum KeyType {
+    /// Noise protocol encryption key.
+    Noise,
+    /// ECDSA signing key.
+    Ecdsa,
+    /// Ed25519 signing key.
+    Ed25519,
+    /// Schnorr signing key.
+    Schnorr,
+}
+
+impl fmt::Display for KeyType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Noise => "noise",
+                Self::Ecdsa => "ecdsa",
+                Self::Ed25519 => "ed25519",
+                Self::Schnorr => "schnorr",
+            }
+        )
+    }
+}
+
+impl std::str::FromStr for KeyType {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(match s {
+            "noise" => Self::Noise,
+            "ecdsa" => Self::Ecdsa,
+            "ed25519" => Self::Ed25519,
+            "schnorr" => Self::Schnorr,
+            _ => return Err(Error::UnknownKeyType(s.to_owned())),
+        })
+    }
+}
+
 /// Key pair used by the noise protocol.
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Keypair {
-    inner: snow::Keypair,
+    private: Vec<u8>,
+    public: Vec<u8>,
+    /// Type of the signing key.
+    #[serde(rename = "type")]
+    key_type: KeyType,
 }
 
 impl Keypair {
-    /// Generate a new keypair.
-    pub fn new(params: NoiseParams) -> Result<Self> {
+    /// Generate a new keypair using the default noise pattern.
+    pub fn generate() -> Result<Keypair> {
+        Keypair::new_params(PATTERN.parse()?)
+    }
+
+    /// Create a keypair from private and public keys.
+    pub fn new(
+        private: Vec<u8>,
+        public: Vec<u8>,
+        key_type: KeyType,
+    ) -> Self {
+        Self {
+            private,
+            public,
+            key_type,
+        }
+    }
+
+    /// Generate a new keypair from noise parameters.
+    pub fn new_params(params: NoiseParams) -> Result<Self> {
         let builder = snow::Builder::new(params);
+        let keypair = builder.generate_keypair()?;
         Ok(Self {
-            inner: builder.generate_keypair()?,
+            private: keypair.private,
+            public: keypair.public,
+            key_type: KeyType::Noise,
         })
     }
 
     /// Public key.
     pub fn public_key(&self) -> &[u8] {
-        &self.inner.public
+        &self.public
     }
 
     /// Private key.
     pub fn private_key(&self) -> &[u8] {
-        &self.inner.private
-    }
-}
-
-impl Clone for Keypair {
-    fn clone(&self) -> Self {
-        Keypair {
-            inner: snow::Keypair {
-                public: self.inner.public.clone(),
-                private: self.inner.private.clone(),
-            },
-        }
-    }
-}
-
-impl Serialize for Keypair {
-    fn serialize<S>(
-        &self,
-        serializer: S,
-    ) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let encoded = encode_keypair(self);
-        serializer.serialize_str(&encoded)
-    }
-}
-
-impl<'de> Deserialize<'de> for Keypair {
-    fn deserialize<D>(
-        deserializer: D,
-    ) -> std::result::Result<Keypair, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        deserializer.deserialize_str(KeypairVisitor)
-    }
-}
-
-struct KeypairVisitor;
-
-impl<'de> Visitor<'de> for KeypairVisitor {
-    type Value = Keypair;
-
-    fn expecting(
-        &self,
-        formatter: &mut fmt::Formatter,
-    ) -> fmt::Result {
-        formatter.write_str("PEM encoded keypair")
+        &self.private
     }
 
-    fn visit_str<E>(
-        self,
-        value: &str,
-    ) -> std::result::Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        let decoded = decode_keypair(value.as_bytes())
-            .map_err(de::Error::custom)?;
-        Ok(decoded)
+    /// Encode as PEM.
+    pub fn encode_pem(&self) -> String {
+        let pattern_pem = Pem::new(PEM_PATTERN, PATTERN.as_bytes());
+        let public_pem =
+            Pem::new(PEM_PUBLIC, self.public_key().to_vec());
+        let private_pem =
+            Pem::new(PEM_PRIVATE, self.private_key().to_vec());
+        pem::encode_many(&[pattern_pem, public_pem, private_pem])
     }
-}
 
-/// Generate a keypair for the noise protocol using the
-/// standard pattern.
-pub fn generate_keypair() -> Result<Keypair> {
-    Keypair::new(PATTERN.parse()?)
-}
+    /// Decode from PEM.
+    pub fn decode_pem(keypair: impl AsRef<[u8]>) -> Result<Keypair> {
+        let mut pems = pem::parse_many(keypair)?;
+        if pems.len() == 3 {
+            let (first, second, third) =
+                (pems.remove(0), pems.remove(0), pems.remove(0));
+            if (PEM_PATTERN, PEM_PUBLIC, PEM_PRIVATE)
+                == (first.tag(), second.tag(), third.tag())
+            {
+                if first.into_contents() != PATTERN.as_bytes() {
+                    return Err(Error::PatternMismatch(
+                        PATTERN.to_string(),
+                    ));
+                }
 
-/// Encode a keypair into a PEM-encoded string.
-pub fn encode_keypair(keypair: &Keypair) -> String {
-    let pattern_pem = Pem::new(PEM_PATTERN, PATTERN.as_bytes());
-    let public_pem =
-        Pem::new(PEM_PUBLIC, keypair.public_key().to_vec());
-    let private_pem =
-        Pem::new(PEM_PRIVATE, keypair.private_key().to_vec());
-    pem::encode_many(&[pattern_pem, public_pem, private_pem])
-}
-
-/// Decode from a PEM-encoded string into a keypair.
-pub fn decode_keypair(keypair: impl AsRef<[u8]>) -> Result<Keypair> {
-    let mut pems = pem::parse_many(keypair)?;
-    if pems.len() == 3 {
-        let (first, second, third) =
-            (pems.remove(0), pems.remove(0), pems.remove(0));
-        if (PEM_PATTERN, PEM_PUBLIC, PEM_PRIVATE)
-            == (first.tag(), second.tag(), third.tag())
-        {
-            if first.into_contents() != PATTERN.as_bytes() {
-                return Err(Error::PatternMismatch(
-                    PATTERN.to_string(),
-                ));
-            }
-
-            Ok(Keypair {
-                inner: snow::Keypair {
+                Ok(Keypair {
                     public: second.into_contents(),
                     private: third.into_contents(),
-                },
-            })
+                    key_type: KeyType::Noise,
+                })
+            } else {
+                Err(Error::BadKeypairPem)
+            }
         } else {
             Err(Error::BadKeypairPem)
         }
-    } else {
-        Err(Error::BadKeypairPem)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{decode_keypair, encode_keypair, generate_keypair};
+    use super::Keypair;
     use crate::{
         Error, PATTERN, PEM_PATTERN, PEM_PRIVATE, PEM_PUBLIC, TAGLEN,
     };
@@ -153,9 +151,9 @@ mod tests {
 
     #[test]
     fn encode_decode_keypair() -> Result<()> {
-        let keypair = generate_keypair()?;
-        let pem = encode_keypair(&keypair);
-        let decoded = decode_keypair(&pem)?;
+        let keypair = Keypair::generate()?;
+        let pem = keypair.encode_pem();
+        let decoded = Keypair::decode_pem(&pem)?;
         assert_eq!(keypair.public_key(), decoded.public_key());
         assert_eq!(keypair.private_key(), decoded.private_key());
         Ok(())
@@ -165,7 +163,7 @@ mod tests {
     fn decode_keypair_wrong_length() -> Result<()> {
         let public_pem = Pem::new("INVALID TAG", vec![0; 32]);
         let pem = pem::encode_many(&[public_pem]);
-        let result = decode_keypair(&pem);
+        let result = Keypair::decode_pem(&pem);
         assert!(matches!(result, Err(Error::BadKeypairPem)));
         Ok(())
     }
@@ -177,7 +175,7 @@ mod tests {
         let private_pem = Pem::new(PEM_PRIVATE, vec![0; 32]);
         let pem =
             pem::encode_many(&[pattern_pem, private_pem, public_pem]);
-        let result = decode_keypair(&pem);
+        let result = Keypair::decode_pem(&pem);
         assert!(matches!(result, Err(Error::BadKeypairPem)));
         Ok(())
     }
@@ -189,7 +187,7 @@ mod tests {
         let private_pem = Pem::new(PEM_PRIVATE, vec![0; 32]);
         let pem =
             pem::encode_many(&[pattern_pem, public_pem, private_pem]);
-        let result = decode_keypair(&pem);
+        let result = Keypair::decode_pem(&pem);
         assert!(matches!(result, Err(Error::PatternMismatch(_))));
         Ok(())
     }

@@ -8,15 +8,16 @@ license = "MIT OR Apache-2.0 OR AGPL-3.0"
 repository = "https://github.com/polysig/polysig"
 
 [features]
-default = ["full"]
 full = ["signers", "protocols"]
 signers = ["ecdsa", "eddsa", "schnorr"]
-protocols = ["cggmp", "frost-ed25519"]
+protocols = ["cggmp", "frost-ed25519", "frost-secp256k1-tr"]
 cggmp = ["k256", "synedrion", "bip32"]
 ecdsa = ["k256/ecdsa"]
 eddsa = ["ed25519", "ed25519-dalek"]
-frost-ed25519 = ["dep:frost-ed25519", "ed25519-dalek"]
-schnorr = ["ed25519", "k256/schnorr"]
+frost-ed25519 = ["frost", "dep:frost-ed25519", "eddsa"]
+frost-secp256k1-tr = ["frost", "dep:frost-secp256k1-tr", "schnorr"]
+frost = []
+schnorr = ["k256/schnorr"]
 
 [dependencies]
 polysig-protocol.workspace = true
@@ -26,6 +27,7 @@ serde_json.workspace = true
 ed25519 = { workspace = true, optional = true }
 ed25519-dalek = { workspace = true, optional = true }
 frost-ed25519 = { workspace = true, optional = true }
+frost-secp256k1-tr = { workspace = true, optional = true }
 synedrion = { workspace = true, optional = true }
 k256 = { workspace = true, optional = true }
 sha3.workspace = true

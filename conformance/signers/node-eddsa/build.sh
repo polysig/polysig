@@ -5,6 +5,6 @@ set -e
 mkdir -p build
 
 cd ../../../crates/bindings/node
-npm run build-eddsa
+npm run build:eddsa-debug
 
-cp -f build/eddsa/release/* ../../../conformance/signers/node-eddsa/build
+cp -f build/eddsa/debug/* ../../../conformance/signers/node-eddsa/build

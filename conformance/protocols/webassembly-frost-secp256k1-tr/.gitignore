@@ -1,0 +1,6 @@
+node_modules/
+public/pkg
+/test-results/
+/playwright-report/
+/playwright/.cache/
+tests/schnorr-serde.json

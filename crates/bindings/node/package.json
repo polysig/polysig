@@ -5,14 +5,20 @@
   "type": "module",
   "main": "./index.js",
   "scripts": {
-    "build-ecdsa": "mkdir -p build/ecdsa/release && napi build --features ecdsa --release build/ecdsa/release",
-    "build-ecdsa:debug": "mkdir -p build/ecdsa/debug && napi build --features ecdsa build/ecdsa/debug",
-    "build-eddsa": "mkdir -p build/eddsa/release && napi build --features eddsa --release build/eddsa/release",
-    "build-eddsa:debug": "mkdir -p build/eddsa/debug && napi build --features eddsa build/eddsa/debug",
-    "build-schnorr": "mkdir -p build/schnorr/release && napi build --features schnorr --release build/schnorr/release",
-    "build-schnorr:debug": "mkdir -p build/schnorr/debug && napi build --features schnorr build/schnorr/debug",
-    "build-cggmp": "mkdir -p build/cggmp/release && napi build --features cggmp --release build/cggmp/release",
-    "build-cggmp:debug": "mkdir -p build/cggmp/debug && napi build --features cggmp build/cggmp/debug"
+    "build:ecdsa": "mkdir -p build/ecdsa/release && napi build --features ecdsa --release build/ecdsa/release",
+    "build:ecdsa-debug": "mkdir -p build/ecdsa/debug && napi build --features ecdsa build/ecdsa/debug",
+    "build:eddsa": "mkdir -p build/eddsa/release && napi build --features eddsa --release build/eddsa/release",
+    "build:eddsa-debug": "mkdir -p build/eddsa/debug && napi build --features eddsa build/eddsa/debug",
+    "build:schnorr": "mkdir -p build/schnorr/release && napi build --features schnorr --release build/schnorr/release",
+    "build:schnorr-debug": "mkdir -p build/schnorr/debug && napi build --features schnorr build/schnorr/debug",
+    "build:cggmp": "mkdir -p build/cggmp/release && napi build --features cggmp --release build/cggmp/release",
+    "build:cggmp-debug": "mkdir -p build/cggmp/debug && napi build --features cggmp build/cggmp/debug",
+
+    "build:frost-ed25519": "mkdir -p build/frost-ed25519/release && napi build --features frost-ed25519 --release build/frost-ed25519/release",
+    "build:frost-ed25519-debug": "mkdir -p build/frost-ed25519/debug && napi build --features frost-ed25519 build/frost-ed25519/debug",
+
+    "build:frost-secp256k1-tr": "mkdir -p build/frost-secp256k1-tr/release && napi build --features frost-secp256k1-tr --release build/frost-secp256k1-tr/release",
+    "build:frost-secp256k1-tr-debug": "mkdir -p build/frost-secp256k1-tr/debug && napi build --features frost-secp256k1-tr build/frost-secp256k1-tr/debug"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.4"

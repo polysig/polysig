@@ -3,11 +3,19 @@
 #![forbid(unsafe_code)]
 
 /// Threshold signature protocols.
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(
+    target_arch = "wasm32",
+    target_os = "unknown",
+    any(feature = "cggmp", feature = "frost")
+))]
 pub mod protocols;
 
 /// Single party signers.
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(
+    target_arch = "wasm32",
+    target_os = "unknown",
+    any(feature = "ecdsa", feature = "eddsa", feature = "schnorr")
+))]
 pub mod signers;
 
 /// Initialize the panic hook and logging.

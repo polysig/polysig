@@ -15,8 +15,27 @@ use crate::{
     ProtocolDriver, RoundInfo, RoundMessage,
 };
 
-use super::{KeyShare, ROUND_1, ROUND_2, ROUND_3};
+use super::KeyShare;
+use crate::frost::{
+    core::sign::frost_sign_impl, ROUND_1, ROUND_2, ROUND_3,
+};
 
+frost_sign_impl!(
+    SigningCommitments,
+    SigningNonces,
+    SignatureShare,
+    SigningPackage,
+    Identifier,
+    Signature,
+    round1,
+    round2,
+    aggregate
+);
+
+// Round1(SigningCommitments),
+// Round2(SignatureShare),
+
+/*
 #[derive(Debug, Serialize, Deserialize)]
 pub enum SignPackage {
     Round1(SigningCommitments),
@@ -270,3 +289,4 @@ impl ProtocolDriver for SignatureDriver {
         }
     }
 }
+*/

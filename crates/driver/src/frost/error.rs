@@ -36,8 +36,14 @@ pub enum Error {
     Protocol(#[from] polysig_protocol::Error),
 
     /// FROST library error.
+    #[cfg(feature = "frost-ed25519")]
     #[error(transparent)]
-    Frost(#[from] frost_ed25519::Error),
+    FrostEd25519(#[from] frost_ed25519::Error),
+
+    /// FROST library error.
+    #[cfg(feature = "frost-secp256k1-tr")]
+    #[error(transparent)]
+    FrostSecp256k1Taproot(#[from] frost_secp256k1_tr::Error),
 }
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]

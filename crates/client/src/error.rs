@@ -141,15 +141,22 @@ pub enum Error {
     #[error(transparent)]
     FrostEd25519Core(#[from] polysig_driver::frost_ed25519::Error),
 
+    #[cfg(feature = "frost-secp256k1-tr")]
+    /// FROST library error.
+    #[error(transparent)]
+    FrostSecp256k1TaprootCore(
+        #[from] polysig_driver::frost_secp256k1_tr::Error,
+    ),
+
     #[cfg(feature = "cggmp")]
     /// CGGMP library error.
     #[error(transparent)]
     Cggmp(#[from] polysig_driver::cggmp::Error),
 
-    #[cfg(feature = "frost-ed25519")]
+    #[cfg(feature = "frost")]
     /// FROST library error.
     #[error(transparent)]
-    FrostEd25519(#[from] polysig_driver::frost::Error),
+    Frost(#[from] polysig_driver::frost::Error),
 }
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]

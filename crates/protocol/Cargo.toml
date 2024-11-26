@@ -7,9 +7,6 @@ keywords = ["mpc", "tss", "relay", "crypto", "e2ee"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/polysig/polysig"
 
-[features]
-zlib = ["dep:flate2"]
-
 [dependencies]
 thiserror.workspace = true
 snow.workspace = true
@@ -23,7 +20,7 @@ uuid.workspace = true
 hex.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-flate2 = { workspace = true, optional = true }
+flate2.workspace = true
 
 [dev-dependencies]
 anyhow.workspace = true

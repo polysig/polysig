@@ -10,7 +10,7 @@ mod session;
 #[cfg(feature = "cggmp")]
 pub mod cggmp;
 
-#[cfg(feature = "frost-ed25519")]
+#[cfg(feature = "frost")]
 pub mod frost;
 
 pub(crate) use bridge::Bridge;
@@ -30,7 +30,6 @@ pub struct ServerOptions {
     /// URL for the server.
     pub server_url: String,
     /// Server public key.
-    #[serde(with = "hex::serde")]
     pub server_public_key: Vec<u8>,
     /// Noise parameters pattern.
     pub pattern: Option<String>,

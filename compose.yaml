@@ -1,0 +1,11 @@
+services:
+  relay:
+    build:
+      dockerfile: ./Dockerfile-relay
+    ports: 
+      - '7007:7007'
+  meeting:
+    build:
+      dockerfile: ./Dockerfile-meeting
+    ports: 
+      - '7070:7070'

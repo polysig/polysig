@@ -1,0 +1,15 @@
+{
+  "name": "node-frost-ed25519",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Example and test spec for FROST Ed25519 signing using the node bindings",
+  "scripts": {
+      "build": "./scripts/build.sh",
+      "relay": "./scripts/relay-server.sh",
+      "test": "node tests/frost.spec.js"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

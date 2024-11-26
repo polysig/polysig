@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
 const polysig = require('../build/polysig.node');
-const { createMeeting, joinMeeting } = polysig;
+const { MeetingRoom } = polysig;
 
 const serverUrl = "ws://localhost:8008/";
 const numParticipants = 5;
@@ -22,8 +22,9 @@ const userData = indices.map((_, index) => {
   };
 });
 
-const meetingId = await createMeeting(
-  serverUrl, userIds, userIds[0]);
+const room = new MeetingRoom(serverUrl);
+
+const meetingId = await room.create(userIds, userIds[0]);
 
 const otherIds = userIds.slice(0);
 const others = [];
@@ -38,8 +39,7 @@ for (const item of others) {
   const [id, data] = item;
   participants.push(new Promise(async (resolve, reject) => {
     try {
-      const results = await joinMeeting(
-        serverUrl, meetingId, id, data);
+      const results = await room.join(meetingId, id, data);
       resolve(results);
     } catch (e) {
       reject(e);

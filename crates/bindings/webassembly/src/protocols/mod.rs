@@ -1,6 +1,8 @@
 #[cfg(feature = "cggmp")]
 pub mod cggmp;
 
-// TODO: enable for FROST too once available
-#[cfg(any(feature = "cggmp"))]
+#[cfg(feature = "frost")]
+pub mod frost;
+
+#[cfg(any(feature = "cggmp", feature = "frost"))]
 pub mod meeting;

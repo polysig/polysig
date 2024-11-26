@@ -1,79 +1,48 @@
-//! Signature generation for FROST.
-use async_trait::async_trait;
+//! Signature generation for FROST Ed25519.
 use polysig_driver::{
     frost::ed25519::{KeyShare, SignatureDriver as FrostDriver},
     frost_ed25519::{Identifier, Signature},
 };
 
-use crate::{
-    protocols::{Bridge, Driver},
-    Error, NetworkTransport, Result, Transport,
-};
-use polysig_protocol::{hex, Event, SessionState};
+use crate::{Error, NetworkTransport, Result, Transport};
+use polysig_protocol::{hex, SessionState};
 
-/// FROST signing driver.
-pub struct SignatureDriver {
-    bridge: Bridge<FrostDriver>,
-}
+/// Signature generation driver for FROST Ed25519.
+pub type SignatureDriver =
+    crate::protocols::frost::core::sign::SignatureDriver<
+        FrostDriver,
+        Signature,
+    >;
 
-impl SignatureDriver {
-    /// Create a new FROST signature driver.
-    pub fn new(
-        transport: Transport,
-        session: SessionState,
-        identifiers: Vec<Identifier>,
-        min_signers: u16,
-        key_share: KeyShare,
-        message: Vec<u8>,
-    ) -> Result<Self> {
-        let party_number = session
-            .party_number(transport.public_key())
-            .ok_or_else(|| {
-                Error::NotSessionParticipant(hex::encode(
-                    transport.public_key(),
-                ))
-            })?;
+/// Create a new FROST Ed25519 signature driver.
+pub fn new_driver(
+    transport: Transport,
+    session: SessionState,
+    identifiers: Vec<Identifier>,
+    min_signers: u16,
+    key_share: KeyShare,
+    message: Vec<u8>,
+) -> Result<SignatureDriver> {
+    let party_number = session
+        .party_number(transport.public_key())
+        .ok_or_else(|| {
+        Error::NotSessionParticipant(hex::encode(
+            transport.public_key(),
+        ))
+    })?;
 
-        let driver = FrostDriver::new(
-            party_number,
-            identifiers,
-            min_signers,
-            key_share,
-            message,
-        )?;
+    let driver = FrostDriver::new(
+        party_number,
+        identifiers,
+        min_signers,
+        key_share,
+        message,
+    )?;
 
-        let bridge = Bridge {
-            transport,
-            driver: Some(driver),
-            session,
-            party_number,
-        };
-        Ok(Self { bridge })
-    }
-}
-
-#[async_trait]
-impl Driver for SignatureDriver {
-    type Output = Signature;
-
-    async fn handle_event(
-        &mut self,
-        event: Event,
-    ) -> Result<Option<Self::Output>> {
-        Ok(self.bridge.handle_event(event).await?)
-    }
-
-    async fn execute(&mut self) -> Result<()> {
-        Ok(self.bridge.execute().await?)
-    }
-
-    fn into_transport(self) -> Transport {
-        self.bridge.transport
-    }
-}
-
-impl From<SignatureDriver> for Transport {
-    fn from(value: SignatureDriver) -> Self {
-        value.bridge.transport
-    }
+    Ok(SignatureDriver::new(
+        transport,
+        session,
+        party_number,
+        driver,
+    ))
 }
