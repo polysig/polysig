@@ -28,7 +28,7 @@ ed25519 = { version = "2.2.3" }
 ed25519-dalek = { version = "2", features = ["rand_core", "serde"] }
 frost-ed25519 = { version = "2" }
 frost-secp256k1-tr = { version = "2" }
-synedrion = { version = "0.3.0" }
+synedrion = { version = "0.2.0" }
 k256 = { version = "0.13", default-features = false, features = ["pem", "serde", "std"] }
 # enable `std` feature for error conversion
 bip32 = { version = "0.5", features = ["std"] }
