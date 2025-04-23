@@ -39,6 +39,7 @@ pub enum Error {
     Bip32(#[from] synedrion::bip32::Error),
 }
 
+/*
 impl From<synedrion::sessions::LocalError> for Error {
     fn from(value: synedrion::sessions::LocalError) -> Self {
         Error::LocalError(value.to_string())
@@ -52,6 +53,7 @@ impl From<synedrion::sessions::RemoteError<VerifyingKey>> for Error {
         Error::RemoteError(format!("{:#?}", value.error))
     }
 }
+*/
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 impl From<Error> for wasm_bindgen::JsValue {

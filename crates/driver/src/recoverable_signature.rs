@@ -1,6 +1,7 @@
 //! Recoverable signature for ECDSA.
 use k256::ecdsa::{RecoveryId, Signature};
 use serde::{Deserialize, Serialize};
+use synedrion::SchemeParams;
 
 /// Recoverable signature.
 #[derive(Debug, Serialize, Deserialize)]
@@ -12,7 +13,9 @@ pub struct RecoverableSignature {
     pub recovery_id: u8,
 }
 
-impl From<(Signature, RecoveryId)> for RecoverableSignature {
+impl<P: SchemeParams> From<(Signature, RecoveryId)>
+    for RecoverableSignature<P>
+{
     fn from(value: (Signature, RecoveryId)) -> Self {
         Self {
             bytes: value.0.to_vec(),
